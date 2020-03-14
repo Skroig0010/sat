@@ -14,15 +14,18 @@ defmodule Sat do
 
   """
   def dpll(formula) do
-    [head | tail] = String.split(formula, "\n")
-    ["p", "cnf", _, _] = head |> String.split(" ") # 使ってない
-    cnf = Enum.map(tail, fn line ->
+    cnf = String.split(formula, "\n")
+    |> Enum.map(fn line -> 
       line
-      |> String.split(" ")
+      |> String.split(" ") 
+      |> Enum.filter(fn x -> !Enum.member?([" ", "\t"], x) end)
+    end)
+    |> Enum.filter(fn line -> !Enum.member?([nil, "p", "c", ""], List.first(line)) end)
+    |> Enum.map(fn line ->
+      line
       |> Enum.map(fn x -> String.to_integer(x) end)
       |> Enum.filter(fn x -> x != 0 end)
     end)
-    IO.inspect("ok")
     spawn(Sat, :solve, [cnf, MapSet.new(), self()])
 
     receive do
